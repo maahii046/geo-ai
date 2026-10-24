@@ -1,9 +1,7 @@
-requests
-pandas
-geopy
-folium
-llama-cpp-python==0.3.36
 fastapi
 uvicorn[standard]
 requests
 pydantic
+pandas
+geopy
+folium
