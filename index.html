@@ -1,0 +1,461 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f2ff">
+  <title>GEO AI — Your Outdoor Companion</title>
+  <style>
+    :root {
+      --purple: #8064c8;
+      --deep: #493578;
+      --lavender: #f7f2ff;
+      --muted: #786b91;
+      --border: #e8def7;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--deep);
+      background:
+        radial-gradient(circle at 10% 5%, #e8dcff 0, transparent 30%),
+        radial-gradient(circle at 95% 35%, #fce7f3 0, transparent 25%),
+        var(--lavender);
+      min-height: 100vh;
+    }
+
+    header {
+      max-width: 1050px;
+      margin: auto;
+      padding: 25px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.7px;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      background: var(--purple);
+      color: white;
+      font-size: 23px;
+      box-shadow: 0 7px 18px #8064c833;
+    }
+
+    .pill {
+      background: #ffffffb8;
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 9px 13px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    main {
+      width: min(100% - 32px, 900px);
+      margin: 24px auto 55px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 35px 12px 30px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      background: #e9defb;
+      color: var(--deep);
+      padding: 8px 13px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 7vw, 58px);
+      line-height: 1.08;
+      letter-spacing: -2px;
+      margin: 20px 0 14px;
+    }
+
+    h1 span { color: var(--purple); }
+
+    .hero p {
+      max-width: 570px;
+      margin: auto;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .panel {
+      background: #ffffffed;
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      padding: clamp(20px, 5vw, 34px);
+      box-shadow: 0 18px 55px #5c438b12;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 23px;
+    }
+
+    .subtext {
+      margin: 0 0 25px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 9px; }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      color: var(--deep);
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px #8064c81c;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #8c70d5, #7051b7);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      padding: 16px 20px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px #8064c833;
+      transition: transform .2s, opacity .2s;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .65; cursor: wait; transform: none; }
+
+    .submit { width: 100%; margin-top: 23px; }
+
+    #status {
+      display: none;
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    #status.error { display: block; background: #fff0f0; color: #963737; }
+    #status.info { display: block; background: #f0eaff; color: var(--deep); }
+    #status.success { display: block; background: #eaf8ef; color: #236c42; }
+
+    #results { display: none; margin-top: 24px; }
+
+    .result-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .result-heading h2 { margin: 0; font-size: 23px; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 13px;
+    }
+
+    .metric {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      padding: 20px;
+      min-width: 0;
+    }
+
+    .metric-icon { font-size: 23px; }
+    .metric-label { margin-top: 12px; color: var(--muted); font-size: 13px; }
+    .metric-value { margin-top: 5px; font-size: 29px; font-weight: 800; overflow-wrap: anywhere; }
+    .metric-unit { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    .details {
+      margin-top: 14px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .details strong { color: var(--deep); }
+
+    .note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 20px 30px;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 18px 16px; }
+      .brand { font-size: 20px; }
+      .pill { font-size: 10px; }
+      main { margin-top: 10px; }
+      .hero { padding-top: 25px; }
+      .fields, .cards { grid-template-columns: 1fr; }
+      .panel { border-radius: 20px; }
+      h1 { letter-spacing: -1.4px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">✦</div>
+      <span>GEO AI</span>
+    </div>
+    <div class="pill">🌿 Your outdoor companion</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <span class="eyebrow">A SMARTER WAY TO STEP OUTSIDE</span>
+      <h1>Your day outside,<br><span>planned better.</span></h1>
+      <p>
+        Explore weather and air-quality conditions for your location
+        before heading out for a walk or another outdoor activity.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Plan your activity ✨</h2>
+      <p class="subtext">
+        Enter your location coordinates and choose an activity to check
+        the available environmental forecast.
+      </p>
+
+      <form id="geoForm">
+        <div class="fields">
+          <div class="field">
+            <label for="latitude">Latitude</label>
+            <input id="latitude" type="number" step="any"
+              min="-90" max="90" value="17.385" required>
+            <span class="hint">Example: 17.385 for Hyderabad</span>
+          </div>
+
+          <div class="field">
+            <label for="longitude">Longitude</label>
+            <input id="longitude" type="number" step="any"
+              min="-180" max="180" value="78.4867" required>
+            <span class="hint">Example: 78.4867 for Hyderabad</span>
+          </div>
+
+          <div class="field" style="grid-column: 1 / -1">
+            <label for="activity">Your activity</label>
+            <select id="activity">
+              <option value="outdoor walking">Outdoor walking</option>
+              <option value="running">Running</option>
+              <option value="cycling">Cycling</option>
+              <option value="outdoor exercise">Outdoor exercise</option>
+            </select>
+            <span class="hint">
+              Activity is sent to the API. The current API does not yet
+              use it to calculate an activity-specific score.
+            </span>
+          </div>
+        </div>
+
+        <button class="submit" id="submitBtn" type="submit">
+          Check environmental conditions →
+        </button>
+        <div id="status" role="status" aria-live="polite"></div>
+      </form>
+
+      <section id="results" aria-live="polite">
+        <div class="result-heading">
+          <h2>Your forecast</h2>
+          <span class="pill">API connected</span>
+        </div>
+
+        <div class="cards">
+          <article class="metric">
+            <div class="metric-icon">🌡️</div>
+            <div class="metric-label">Temperature</div>
+            <div class="metric-value" id="temperature">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-icon">🌧️</div>
+            <div class="metric-label">Precipitation</div>
+            <div class="metric-value" id="precipitation">—</div>
+          </article>
+          <article class="metric">
+            <div class="metric-icon">💨</div>
+            <div class="metric-label">PM2.5</div>
+            <div class="metric-value" id="pm25">—</div>
+            <div class="metric-unit">µg/m³</div>
+          </article>
+          <article class="metric">
+            <div class="metric-icon">🌍</div>
+            <div class="metric-label">US Air Quality Index</div>
+            <div class="metric-value" id="aqi">—</div>
+          </article>
+        </div>
+
+        <div class="details">
+          <strong>Forecast time:</strong> <span id="forecastTime">—</span>
+          <br>
+          <strong>Activity:</strong> <span id="resultActivity">—</span>
+        </div>
+
+        <p class="note" id="apiNote"></p>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    Made with 💜 for GEO AI · Environmental forecasts can change.
+    This tool does not provide medical advice or guarantee outdoor safety.
+  </footer>
+
+  <script>
+    const API_URL = "https://geo-ai-api.onrender.com/recommend";
+
+    const form = document.getElementById("geoForm");
+    const button = document.getElementById("submitBtn");
+    const statusBox = document.getElementById("status");
+    const results = document.getElementById("results");
+
+    function showStatus(message, type) {
+      statusBox.textContent = message;
+      statusBox.className = type;
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const latitude = Number(document.getElementById("latitude").value);
+      const longitude = Number(document.getElementById("longitude").value);
+      const activity = document.getElementById("activity").value;
+
+      if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+          !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+        showStatus("Please enter valid latitude and longitude values.", "error");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Checking conditions…";
+      results.style.display = "none";
+      showStatus("Connecting to GEO AI and retrieving the forecast…", "info");
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latitude, longitude, activity })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.detail || "The API could not return forecast data.");
+        }
+
+        document.getElementById("temperature").textContent =
+          data.temperature_c == null ? "Unavailable" : `${data.temperature_c}°C`;
+
+        document.getElementById("precipitation").textContent =
+          data.precipitation_mm == null ? "Unavailable" : `${data.precipitation_mm} mm`;
+
+        document.getElementById("pm25").textContent =
+          data.pm25 == null ? "Unavailable" : data.pm25;
+
+        document.getElementById("aqi").textContent =
+          data.us_aqi == null ? "Unavailable" : data.us_aqi;
+
+        document.getElementById("forecastTime").textContent =
+          data.forecast_time || "Unavailable";
+
+        document.getElementById("resultActivity").textContent =
+          data.activity || activity;
+
+        document.getElementById("apiNote").textContent =
+          data.note || "Environmental forecast only. Conditions can change.";
+
+        results.style.display = "block";
+        showStatus("Forecast loaded successfully! 💜", "success");
+      } catch (error) {
+        const message = error.message || "";
+
+        if (message.toLowerCase().includes("failed to fetch")) {
+          showStatus(
+            "We couldn't connect from this website. The API may need CORS enabled. We'll configure that in the next step.",
+            "error"
+          );
+        } else {
+          showStatus(`Unable to load the forecast: ${message}`, "error");
+        }
+      } finally {
+        button.disabled = false;
+        button.textContent = "Check environmental conditions →";
+      }
+    });
+  </script>
+</body>
+</html>
