@@ -29,7 +29,9 @@ def home():
 @app.post("/recommend")
 def recommend(request: RecommendationRequest):
     try:
+        # 1. Get weather forecast
         weather_url = "https://api.open-meteo.com/v1/forecast"
+
         weather_params = {
             "latitude": request.latitude,
             "longitude": request.longitude,
@@ -40,23 +42,26 @@ def recommend(request: RecommendationRequest):
 
         weather_response = None
 
-for attempt in range(3):
-    weather_response = requests.get(
-        weather_url,
-        params=weather_params,
-        timeout=20
-    )
+        # Retry up to 3 times if Open-Meteo returns HTTP 429
+        for attempt in range(3):
+            weather_response = requests.get(
+                weather_url,
+                params=weather_params,
+                timeout=20
+            )
 
-    if weather_response.status_code != 429:
-        break
+            if weather_response.status_code != 429:
+                break
 
-    if attempt < 2:
-        time.sleep(3 * (attempt + 1))
+            if attempt < 2:
+                time.sleep(3 * (attempt + 1))
 
-weather_response.raise_for_status()
+        weather_response.raise_for_status()
         weather = weather_response.json()
 
+        # 2. Get air-quality forecast
         air_url = "https://air-quality-api.open-meteo.com/v1/air-quality"
+
         air_params = {
             "latitude": request.latitude,
             "longitude": request.longitude,
@@ -66,13 +71,17 @@ weather_response.raise_for_status()
         }
 
         air_response = requests.get(
-            air_url, params=air_params, timeout=20
+            air_url,
+            params=air_params,
+            timeout=20
         )
         air_response.raise_for_status()
         air = air_response.json()
 
+        # 3. Extract forecast data
         weather_hour = weather.get("hourly", {})
         air_hour = air.get("hourly", {})
+
         weather_times = weather_hour.get("time", [])
         air_times = air_hour.get("time", [])
 
@@ -97,7 +106,9 @@ weather_response.raise_for_status()
                 detail="Required air-quality forecast fields are missing"
             )
 
+        # 4. Return environmental data
         return {
+            "project": "GEO AI",
             "activity": request.activity,
             "latitude": request.latitude,
             "longitude": request.longitude,
@@ -118,6 +129,7 @@ weather_response.raise_for_status()
 
     except requests.RequestException as exc:
         print(f"Open-Meteo request error: {exc}", flush=True)
+
         raise HTTPException(
             status_code=502,
             detail=(
@@ -128,6 +140,7 @@ weather_response.raise_for_status()
 
     except (KeyError, IndexError, TypeError) as exc:
         print(f"Forecast data processing error: {exc}", flush=True)
+
         raise HTTPException(
             status_code=502,
             detail=(
@@ -135,4 +148,3 @@ weather_response.raise_for_status()
                 f"{type(exc).__name__}: {exc}"
             )
         ) from exc
-
