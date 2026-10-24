@@ -1,4 +1,5 @@
 
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import requests
@@ -58,9 +59,10 @@ def recommend(request: RecommendationRequest):
         air_response.raise_for_status()
         air = air_response.json()
 
-        # Return the next available hourly forecast.
-        weather_times = weather.get("hourly", {}).get("time", [])
-        air_times = air.get("hourly", {}).get("time", [])
+        weather_hour = weather.get("hourly", {})
+        air_hour = air.get("hourly", {})
+        weather_times = weather_hour.get("time", [])
+        air_times = air_hour.get("time", [])
 
         if not weather_times or not air_times:
             raise HTTPException(
@@ -68,8 +70,20 @@ def recommend(request: RecommendationRequest):
                 detail="Forecast data is unavailable"
             )
 
-        weather_hour = weather["hourly"]
-        air_hour = air["hourly"]
+        required_weather = ("temperature_2m", "precipitation")
+        required_air = ("pm2_5", "us_aqi")
+
+        if any(not weather_hour.get(key) for key in required_weather):
+            raise HTTPException(
+                status_code=502,
+                detail="Required weather forecast fields are missing"
+            )
+
+        if any(not air_hour.get(key) for key in required_air):
+            raise HTTPException(
+                status_code=502,
+                detail="Required air-quality forecast fields are missing"
+            )
 
         return {
             "activity": request.activity,
@@ -89,16 +103,23 @@ def recommend(request: RecommendationRequest):
 
     except HTTPException:
         raise
-        except requests.RequestException as exc:
-    print(f"Open-Meteo request error: {exc}", flush=True)
-    raise HTTPException(
-        status_code=502,
-        detail=f"Environmental data request failed: {type(exc).__name__}: {exc}"
-    ) from exc
 
-except (KeyError, IndexError, TypeError) as exc:
-    print(f"Forecast data processing error: {exc}", flush=True)
-    raise HTTPException(
-        status_code=502,
-        detail=f"Forecast data processing failed: {type(exc).__name__}: {exc}"
-    ) from exc
+    except requests.RequestException as exc:
+        print(f"Open-Meteo request error: {exc}", flush=True)
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                f"Environmental data request failed: "
+                f"{type(exc).__name__}: {exc}"
+            )
+        ) from exc
+
+    except (KeyError, IndexError, TypeError) as exc:
+        print(f"Forecast data processing error: {exc}", flush=True)
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                f"Forecast data processing failed: "
+                f"{type(exc).__name__}: {exc}"
+            )
+        ) from exc
