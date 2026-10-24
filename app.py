@@ -1,8 +1,8 @@
 
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import requests
+import time
 
 app = FastAPI(
     title="GEO AI API",
@@ -38,10 +38,22 @@ def recommend(request: RecommendationRequest):
             "timezone": "auto"
         }
 
-        weather_response = requests.get(
-            weather_url, params=weather_params, timeout=20
-        )
-        weather_response.raise_for_status()
+        weather_response = None
+
+for attempt in range(3):
+    weather_response = requests.get(
+        weather_url,
+        params=weather_params,
+        timeout=20
+    )
+
+    if weather_response.status_code != 429:
+        break
+
+    if attempt < 2:
+        time.sleep(3 * (attempt + 1))
+
+weather_response.raise_for_status()
         weather = weather_response.json()
 
         air_url = "https://air-quality-api.open-meteo.com/v1/air-quality"
@@ -123,3 +135,4 @@ def recommend(request: RecommendationRequest):
                 f"{type(exc).__name__}: {exc}"
             )
         ) from exc
+
