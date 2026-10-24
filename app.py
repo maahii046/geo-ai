@@ -89,8 +89,16 @@ def recommend(request: RecommendationRequest):
 
     except HTTPException:
         raise
-    except (requests.RequestException, KeyError, IndexError, TypeError) as exc:
-        raise HTTPException(
-            status_code=502,
-            detail="Could not retrieve complete environmental forecast data"
-        ) from exc
+        except requests.RequestException as exc:
+    print(f"Open-Meteo request error: {exc}", flush=True)
+    raise HTTPException(
+        status_code=502,
+        detail=f"Environmental data request failed: {type(exc).__name__}: {exc}"
+    ) from exc
+
+except (KeyError, IndexError, TypeError) as exc:
+    print(f"Forecast data processing error: {exc}", flush=True)
+    raise HTTPException(
+        status_code=502,
+        detail=f"Forecast data processing failed: {type(exc).__name__}: {exc}"
+    ) from exc
