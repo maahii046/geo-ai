@@ -89,7 +89,3 @@ Please review each provider's usage policies and attribution requirements before
 ## 👩‍💻 Project Status
 
 GEO AI is an ongoing hackathon prototype. Weather and air-quality comparison and the initial recommendation-to-location-data integration have been tested in Google Colab. Public API deployment, repository packaging, and further reliability improvements remain in progress.
-
-## 📄 License
-
-A project license has not yet been selected. Add a license after confirming that the project code and any included assets can be distributed under its terms.
