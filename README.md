@@ -84,7 +84,6 @@ These values are an example from a particular forecast run and may change as for
 - [OpenStreetMap Nominatim](https://nominatim.org/)
 - [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API)
 
-Please review each provider's usage policies and attribution requirements before deployment.
 
 ## 👩‍💻 Project Status
 
